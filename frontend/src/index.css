@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  background: #0d1a0e;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f8a3b44;
+  border-radius: 8px;
+}
+
+.chat-gradient {
+  background: linear-gradient(135deg, #0d1a0e 0%, #111f12 40%, #0f1c1a 100%);
+}
+
+.grain-overlay::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.msg-bubble-user {
+  background: linear-gradient(135deg, #2d6e2a, #3f8a3b);
+  box-shadow: 0 4px 20px rgba(63,138,59,0.3);
+}
+
+.msg-bubble-ai {
+  background: linear-gradient(135deg, #1a2e1b, #1e3520);
+  border: 1px solid rgba(63,138,59,0.2);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.input-glow:focus-within {
+  box-shadow: 0 0 0 2px rgba(63,138,59,0.4), 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.voice-recording {
+  animation: voicePulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes voicePulse {
+  from { box-shadow: 0 0 0 0 rgba(220,80,80,0.6); }
+  to   { box-shadow: 0 0 0 12px rgba(220,80,80,0); }
+}
