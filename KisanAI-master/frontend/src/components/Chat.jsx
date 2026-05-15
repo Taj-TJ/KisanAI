@@ -15,7 +15,9 @@ import {
   MoreVertical,
   Paperclip,
   Zap,
-  User
+  User,
+  Volume2,
+  VolumeX
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { sendQuery, fetchChatHistory, clearChatHistory, fetchThreads } from '../services/api'
@@ -134,6 +136,7 @@ export default function Chat() {
   const [threads, setThreads]           = useState([])
   const [currentThreadId, setCurrentThreadId] = useState('default')
   const [threadTitle, setThreadTitle]         = useState(null)
+  const [isMuted, setIsMuted]                 = useState(false)
 
   const bottomRef    = useRef(null)
   const inputRef     = useRef(null)
@@ -215,12 +218,22 @@ export default function Chat() {
   const speak = (text) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel()
+      if (isMuted) return;
       const cleanText = text.replace(/[*#_\[\]\(\)]/g, '').trim();
       const utterance = new SpeechSynthesisUtterance(cleanText)
       utterance.lang = currentLang.speechCode
       utterance.rate = 1.0
       window.speechSynthesis.speak(utterance)
     }
+  }
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (nextMuted && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    toast.success(nextMuted ? 'Voice Muted' : 'Voice Enabled');
   }
 
   const handleSend = useCallback(async (textOverride) => {
@@ -322,7 +335,7 @@ export default function Chat() {
                   <Trash2 size={16} />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar">
+              <div className="flex-1 overflow-y-auto p-3 space-y-1">
                 {threads.map(t => (
                   <button
                     key={t.threadId}
@@ -375,6 +388,14 @@ export default function Chat() {
           </div>
 
           <div className="flex items-center gap-2">
+             <button 
+                onClick={toggleMute}
+                className={`p-2 rounded-xl border transition-all ${isMuted ? 'bg-red-50 border-red-200 text-red-500' : 'border-[#e1e4db] text-[#41493e] hover:bg-[#f4f4f0]'}`}
+                title={isMuted ? "Enable Voice" : "Mute Voice"}
+             >
+                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+             </button>
+
              <button onClick={() => setShowLangMenu(!showLangMenu)} className="flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 rounded-xl border border-[#e1e4db] hover:bg-[#f4f4f0] text-sm font-bold text-[#41493e] transition-all">
                 <span>{currentLang.flag}</span>
                 <span className="hidden sm:inline uppercase tracking-tighter text-[11px]">{currentLang.label}</span>
@@ -401,8 +422,8 @@ export default function Chat() {
           </AnimatePresence>
         </header>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8 scroll-smooth pb-[320px]">
+        {/* Messages Container */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-8 py-6 md:py-8 scroll-smooth">
           <div className="max-w-5xl mx-auto w-full">
             <AnimatePresence initial={false}>
               {messages.map(msg => <Message key={msg.id} msg={msg} />)}
@@ -413,7 +434,7 @@ export default function Chat() {
         </div>
 
         {/* Input Area */}
-        <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 bg-white/80 backdrop-blur-xl border-t border-[#e1e4db] z-40">
+        <div className="w-full p-4 md:p-6 bg-white/80 backdrop-blur-xl border-t border-[#e1e4db] shrink-0 z-40">
           <div className="max-w-4xl mx-auto space-y-4">
             
             {/* Chips */}
