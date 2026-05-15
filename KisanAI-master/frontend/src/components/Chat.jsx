@@ -402,7 +402,7 @@ export default function Chat() {
         </header>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8 no-scrollbar pb-64">
+        <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8 scroll-smooth pb-[320px]">
           <div className="max-w-5xl mx-auto w-full">
             <AnimatePresence initial={false}>
               {messages.map(msg => <Message key={msg.id} msg={msg} />)}
