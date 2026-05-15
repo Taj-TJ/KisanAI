@@ -96,12 +96,24 @@ def is_cache_valid(key):
             return False
     return False
 
-# Connect to DB at startup
-try:
-    db.connect()
-    print("[app] Connected to Prisma DB.")
-except Exception as e:
-    print(f"[app] DB connection failed: {e}")
+# Improved DB connection management
+def ensure_db_connected():
+    if not db.is_connected():
+        try:
+            db.connect(timeout=20)
+            print("[app] Database connected successfully.")
+        except Exception as e:
+            print(f"[app] CRITICAL: Database connection failed: {e}")
+            return False
+    return True
+
+# Try connecting at startup
+ensure_db_connected()
+
+@app.before_request
+def before_request():
+    # Ensure DB is connected for every request
+    ensure_db_connected()
 
 # Train/load model at startup
 print("[app] Loading model...")
