@@ -28,8 +28,11 @@ from utils import get_expert_advice, get_fallback_recommendations
 app = Flask(__name__)
 CORS(app)
 
-# Initialize Prisma
-db = Prisma()
+# Initialize Prisma with explicit URL from environment
+db = Prisma(
+    datasource={'url': os.environ.get("DATABASE_URL")},
+    log_queries=True
+)
 
 # JWT & API Config
 JWT_SECRET = os.environ.get("JWT_SECRET")
@@ -98,13 +101,15 @@ def is_cache_valid(key):
 
 # Improved DB connection management
 def ensure_db_connected():
-    if not db.is_connected():
-        try:
+    try:
+        if not db.is_connected():
             db.connect(timeout=60, handle_signals=False)
             print("[app] Database connected successfully.")
-        except Exception as e:
-            print(f"[app] CRITICAL: Database connection failed: {e}")
-            return False
+    except Exception as e:
+        if "already connected" in str(e).lower():
+            return True
+        print(f"[app] CRITICAL: Database connection failed: {e}")
+        return False
     return True
 
 # Try connecting at startup
@@ -205,20 +210,21 @@ def health():
 
 @app.route("/db-test", methods=["GET"])
 def db_test():
+    import traceback
     try:
         # Check if DATABASE_URL is even present
         db_url = os.environ.get("DATABASE_URL", "NOT_SET")
         masked_url = db_url[:15] + "..." if db_url != "NOT_SET" else "NOT_SET"
         
-        # Try to connect with a longer timeout and no signal handling
-        if not db.is_connected():
-            db.connect(timeout=60, handle_signals=False)
+        # Force attempt connection
+        ensure_db_connected()
             
         count = db.user.count()
         return jsonify({
             "status": "connected",
             "user_count": count,
             "db_url_found": masked_url,
+            "is_connected": db.is_connected(),
             "message": "Successfully queried Neon database via Prisma."
         })
     except Exception as e:
@@ -226,6 +232,7 @@ def db_test():
             "status": "error",
             "error_type": type(e).__name__,
             "error_message": str(e),
+            "traceback": traceback.format_exc(),
             "db_url_found": masked_url if 'masked_url' in locals() else "UNKNOWN"
         }), 500
 
