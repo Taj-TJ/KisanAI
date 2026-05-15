@@ -183,14 +183,19 @@ app.get("/weather", async (req, res) => {
 app.get("/prices", async (req, res) => {
   if (isCacheValid("prices")) return res.json(apiCache["prices"].data);
 
-  const basePrices = { "Wheat": 2200, "Rice": 2800, "Soybean": 4500, "Cotton": 6000 };
-  const markets = ["Indore", "Pune", "Bhopal", "Nashik"];
+  const basePrices = { 
+    "Wheat": 2200, "Rice": 2800, "Soybean": 4500, "Cotton": 6000,
+    "Mustard": 5400, "Maize": 1950, "Onion": 1400, "Potato": 1100,
+    "Tomato": 1600, "Ginger": 7500, "Garlic": 8200, "Sugarcane": 310
+  };
+  const markets = ["Indore", "Pune", "Bhopal", "Nashik", "Karnal", "Amritsar", "Latur"];
   
   const livePrices = Object.keys(basePrices).map(crop => {
-    const price = basePrices[crop] + Math.floor(Math.random() * 400 - 200);
+    const base = basePrices[crop];
+    const price = base + Math.floor(Math.random() * (base * 0.1) - (base * 0.05));
     return {
       crop, variety: "Common", price, trend: Math.random() > 0.5 ? "up" : "down",
-      change: Math.floor(Math.random() * 50),
+      change: Math.floor(Math.random() * 50) + 10,
       market: markets[Math.floor(Math.random() * markets.length)],
       history: Array.from({ length: 5 }, () => ({ value: price + Math.floor(Math.random() * 100 - 50) }))
     };
@@ -200,6 +205,16 @@ app.get("/prices", async (req, res) => {
   apiCache["prices"] = { data: result, time: new Date() };
   saveCache();
   res.json(result);
+});
+
+app.get("/prices/analysis", async (req, res) => {
+  if (!aiService.enabled) return res.json({ analysis: "Market analysis computed locally." });
+  try {
+    const crops = ["Wheat", "Rice", "Soybean", "Cotton", "Mustard"];
+    const prompt = `Analyze the current Indian market for: ${crops.join(", ")}. Provide 3 short expert sentences on selling potential and price momentum.`;
+    const analysis = await aiService.callGemini(prompt);
+    res.json({ analysis: analysis || "Prices are currently stable across regional mandis." });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // --- RECOMMENDATION ---
