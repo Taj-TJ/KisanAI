@@ -101,15 +101,14 @@ def is_cache_valid(key):
 
 # Improved DB connection management
 def ensure_db_connected():
-    try:
-        if not db.is_connected():
+    if not db.is_connected():
+        try:
             db.connect(timeout=60, handle_signals=False)
             print("[app] Database connected successfully.")
-    except Exception as e:
-        if "already connected" in str(e).lower():
-            return True
-        print(f"[app] CRITICAL: Database connection failed: {e}")
-        return False
+        except Exception as e:
+            if "already connected" in str(e).lower():
+                return True
+            raise e
     return True
 
 # Try connecting at startup
