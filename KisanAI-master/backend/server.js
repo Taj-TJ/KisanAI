@@ -237,23 +237,9 @@ app.post("/recommend", async (req, res) => {
       recommendations = []; 
     }
 
-    // Fallback logic if AI fails or returns empty
+    // Removed fallback logic - strictly using AI data now
     if (recommendations.length === 0) {
-      if (season === 'Kharif') {
-        recommendations = [
-          { name: "Rice (Paddy)", reason: "Perfect for monsoon and Alluvial/Black soil with high water.", profit: "₹45,000/acre", cycle: "120 Days" },
-          { name: "Maize", reason: "Resilient crop for various soil types during Kharif.", profit: "₹35,000/acre", cycle: "90 Days" },
-          { name: "Cotton", reason: "High value crop for Black soil and moderate water.", profit: "₹85,000/acre", cycle: "180 Days" },
-          { name: "Soybean", reason: "Excellent nitrogen fixer for soil health.", profit: "₹42,000/acre", cycle: "100 Days" }
-        ];
-      } else {
-        recommendations = [
-          { name: "Wheat", reason: "Standard Rabi staple for Alluvial soil.", profit: "₹48,000/acre", cycle: "130 Days" },
-          { name: "Mustard", reason: "Low water requirement and high market demand.", profit: "₹55,000/acre", cycle: "110 Days" },
-          { name: "Chickpea", reason: "Great for soil nutrition and thrives in Rabi.", profit: "₹40,000/acre", cycle: "120 Days" },
-          { name: "Potato", reason: "High yield potential in Loamy/Alluvial soil.", profit: "₹95,000/acre", cycle: "95 Days" }
-        ];
-      }
+      throw new Error("AI failed to generate recommendations. Please try again.");
     }
 
     const userId = getUserId(req);
@@ -287,15 +273,9 @@ app.post("/detect", async (req, res) => {
       console.log("[server] Disease parse failed, using fallback.");
     }
 
-    // Fallback if AI fails or returns empty
+    // Removed fallback - strictly using AI for vision now
     if (!result) {
-      result = {
-        disease: "Suspected Fungal Infection (General)",
-        confidence: 0.75,
-        severity: "Moderate",
-        treatment: "Apply organic fungicides (Neem Oil) and remove infected leaves immediately to prevent spread.",
-        fertilizer: "Apply Potash-rich fertilizer to boost plant immunity."
-      };
+       throw new Error("Tissue scan failed. The AI might be busy, please try again.");
     }
 
     const userId = getUserId(req);
