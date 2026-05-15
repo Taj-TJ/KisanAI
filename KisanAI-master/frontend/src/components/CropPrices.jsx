@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, TrendingDown, MapPin, Search, Loader2, RefreshCcw, Activity, Sparkles, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, MapPin, Search, Loader2, RefreshCcw, Activity, AlertCircle, ChevronRight, BarChart3 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import AnimatedCard from './ui/AnimatedCard';
 import { fetchPrices, fetchPriceAnalysis } from '../services/api';
 
 function NumberTicker({ value }) {
@@ -26,12 +25,13 @@ export default function CropPrices() {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState('');
-  const [loadingAI, setLoadingAI] = useState(false);
+  const [marketAnalysis, setMarketAnalysis] = useState('');
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [error, setError] = useState(null);
 
   // Debounce search
   useEffect(() => {
+    document.title = "Market Trends | KisanAI";
     const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -53,23 +53,21 @@ export default function CropPrices() {
     }
   };
 
-  const loadAI = async () => {
-    setLoadingAI(true);
+  const loadAnalysis = async () => {
+    setLoadingAnalysis(true);
     try {
       const data = await fetchPriceAnalysis();
-      setAiAnalysis(data.analysis);
+      setMarketAnalysis(data.analysis);
     } catch (err) {
-      setAiAnalysis('Market analysis temporarily unavailable.');
+      setMarketAnalysis('Market analysis temporarily unavailable.');
     } finally {
-      setLoadingAI(false);
+      setLoadingAnalysis(false);
     }
   };
 
   useEffect(() => {
     loadData();
-    loadAI();
-    
-    // Refresh live data every 60 seconds
+    loadAnalysis();
     const interval = setInterval(() => loadData(true), 60000);
     return () => clearInterval(interval);
   }, []);
@@ -91,198 +89,216 @@ export default function CropPrices() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0d1a0e]">
+      <div className="min-h-screen flex items-center justify-center bg-[#f4f4f0]">
         <div className="text-center space-y-4">
-          <Loader2 className="w-10 h-10 text-leaf-400 animate-spin mx-auto" />
-          <p className="text-gray-400 font-light animate-pulse">Connecting to Mandi API...</p>
+          <Loader2 className="w-10 h-10 text-[#1b5e20] animate-spin mx-auto" />
+          <p className="text-[#41493e] font-bold text-[10px] uppercase tracking-widest animate-pulse">Accessing Mandi Network...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen overflow-y-auto" style={{ background: 'linear-gradient(160deg, #0d1a0e 0%, #0f1c1a 100%)' }}>
-      <div className="max-w-4xl mx-auto px-4 py-6 md:py-10 pb-24 md:pb-10 space-y-6">
+    <div className="min-h-screen bg-[#f4f4f0] font-['Manrope'] text-[#191d18] overflow-y-auto">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-8 space-y-6">
 
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-white tracking-tight">Market Prices</h2>
-            <div className="flex items-center gap-1.5 mt-1">
-              <MapPin size={13} className="text-leaf-400" />
-              <p className="text-sm text-gray-400 italic">Live Agmarknet Data</p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <h1 className="text-xl md:text-2xl font-extrabold text-[#002c06] tracking-tight">Market Prices</h1>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <MapPin size={12} className="text-[#1b5e20]" />
+              <p className="text-xs text-[#41493e] font-medium opacity-60 italic">Live Agmarknet Data Feed</p>
             </div>
-          </div>
-          <div className="flex flex-col items-end gap-1">
+          </motion.div>
+
+          <div className="flex items-center gap-3">
+             <div className="text-right hidden sm:block">
+                {lastUpdate && <p className="text-[9px] text-[#41493e] font-bold uppercase tracking-widest opacity-40">Refreshed: {lastUpdate.toLocaleTimeString()}</p>}
+             </div>
              <button 
-               onClick={() => { loadData(); loadAI(); }}
+               onClick={() => { loadData(); loadAnalysis(); }}
                disabled={updating}
-               className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/5 hover:bg-white/10 transition-all"
+               className="flex items-center gap-2 bg-white border border-[#e1e4db] px-4 py-2 rounded-xl hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
              >
-                {updating ? <Loader2 size={10} className="animate-spin text-leaf-400" /> : <RefreshCcw size={10} className="text-leaf-400" />}
-                {updating ? 'Updating...' : 'Live Feed'}
+                {updating ? <Loader2 size={14} className="animate-spin text-[#1b5e20]" /> : <RefreshCcw size={14} className="text-[#1b5e20]" />}
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#002c06]">Live Feed</span>
              </button>
-             {lastUpdate && <p className="text-[9px] text-gray-600 font-mono mt-1">Refreshed: {lastUpdate.toLocaleTimeString()}</p>}
           </div>
         </div>
 
-        {/* AI Market Insight Card */}
-        <AnimatedCard className="p-5 bg-gradient-to-br from-indigo-900/20 to-purple-900/10 border-indigo-500/20 overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-3 opacity-10">
-            <Sparkles size={120} className="text-indigo-400 rotate-12" />
-          </div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="p-1.5 rounded-lg bg-indigo-500/20">
-                <Sparkles size={16} className="text-indigo-400" />
-              </div>
-              <h3 className="text-[10px] font-bold text-indigo-300 uppercase tracking-[0.2em]">AI Market Insight</h3>
-            </div>
-            <div className="min-h-[60px]">
-              {loadingAI ? (
-                <div className="flex items-center gap-3 py-2">
-                  <Loader2 size={16} className="animate-spin text-indigo-400" />
-                  <p className="text-sm text-gray-500 font-light italic">Analyzing Mandi trends...</p>
+        {/* Market Analysis Banner */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-[#002c06] text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group"
+        >
+          {/* Subtle decoration */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-white/10 transition-colors" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row gap-6 items-start md:items-center">
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-white/10 rounded-lg">
+                  <BarChart3 size={18} className="text-[#95d78e]" />
                 </div>
-              ) : (
-                <motion.p 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="text-sm text-gray-300 leading-relaxed font-light"
-                >
-                  {aiAnalysis || "Fetching expert market analysis..."}
-                </motion.p>
-              )}
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#95d78e]">Mandi Analysis</h3>
+              </div>
+              <div className="min-h-[40px]">
+                {loadingAnalysis ? (
+                  <div className="flex items-center gap-2 opacity-50">
+                    <Loader2 size={12} className="animate-spin" />
+                    <p className="text-xs italic">Syncing with regional price data...</p>
+                  </div>
+                ) : (
+                  <p className="text-sm md:text-md font-medium text-white/90 leading-relaxed">
+                    {marketAnalysis || "Regional price trends are being compiled for your local area."}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex shrink-0 gap-2">
+               <span className="bg-white/10 border border-white/5 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                 <TrendingUp size={10} className="text-[#95d78e]" /> High Momentum
+               </span>
             </div>
           </div>
-        </AnimatedCard>
-
-        {/* Error State */}
-        {error && (
-          <div className="p-4 bg-red-900/20 border border-red-500/20 rounded-2xl flex items-center gap-3">
-            <AlertCircle className="text-red-400" size={18} />
-            <p className="text-sm text-red-300">{error}</p>
-          </div>
-        )}
+        </motion.div>
 
         {/* Top Movers (Gainers/Losers) */}
         {!debouncedSearch && topGainer && topLoser && (
-          <div className="grid grid-cols-2 gap-4">
-            <AnimatedCard className="p-4 bg-emerald-900/10 border-emerald-500/20">
-              <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><TrendingUp size={12}/> Top Gainer</p>
-              <div className="flex justify-between items-end">
-                <div>
-                  <h3 className="text-white font-bold text-sm truncate max-w-[80px]">{topGainer.crop}</h3>
-                  <p className="text-[10px] text-gray-400 truncate max-w-[80px]">{topGainer.market}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white border border-[#e1e4db] p-4 rounded-xl flex items-center justify-between group hover:shadow-md transition-all">
+              <div className="flex items-center gap-4">
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+                  <TrendingUp size={18} />
                 </div>
-                <div className="text-right">
-                  <p className="text-emerald-400 font-bold text-sm">+{topGainer.change}</p>
-                  <p className="text-white font-mono text-xs">₹{topGainer.price}</p>
+                <div>
+                  <p className="text-[9px] font-black text-[#41493e] uppercase tracking-widest opacity-40 mb-0.5">Top Gainer</p>
+                  <h4 className="text-sm font-bold text-[#002c06]">{topGainer.crop}</h4>
+                  <p className="text-[10px] text-[#41493e]">{topGainer.market}</p>
                 </div>
               </div>
-            </AnimatedCard>
-            <AnimatedCard className="p-4 bg-red-900/10 border-red-500/20">
-              <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest mb-2 flex items-center gap-2"><TrendingDown size={12}/> Top Loser</p>
-              <div className="flex justify-between items-end">
-                <div>
-                  <h3 className="text-white font-bold text-sm truncate max-w-[80px]">{topLoser.crop}</h3>
-                  <p className="text-[10px] text-gray-400 truncate max-w-[80px]">{topLoser.market}</p>
+              <div className="text-right">
+                <p className="text-emerald-600 font-black text-sm">+{topGainer.change}</p>
+                <p className="text-xs font-bold text-[#002c06]">₹{topGainer.price}</p>
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#e1e4db] p-4 rounded-xl flex items-center justify-between group hover:shadow-md transition-all">
+              <div className="flex items-center gap-4">
+                <div className="p-2.5 rounded-xl bg-red-50 text-red-600 border border-red-100">
+                  <TrendingDown size={18} />
                 </div>
-                <div className="text-right">
-                  <p className="text-red-400 font-bold text-sm">-{topLoser.change}</p>
-                  <p className="text-white font-mono text-xs">₹{topLoser.price}</p>
+                <div>
+                  <p className="text-[9px] font-black text-[#41493e] uppercase tracking-widest opacity-40 mb-0.5">Top Loser</p>
+                  <h4 className="text-sm font-bold text-[#002c06]">{topLoser.crop}</h4>
+                  <p className="text-[10px] text-[#41493e]">{topLoser.market}</p>
                 </div>
               </div>
-            </AnimatedCard>
+              <div className="text-right">
+                <p className="text-red-600 font-black text-sm">-{topLoser.change}</p>
+                <p className="text-xs font-bold text-[#002c06]">₹{topLoser.price}</p>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Search */}
-        <div
-          className="flex items-center gap-3 rounded-2xl px-4 py-4 transition-all focus-within:ring-1 focus-within:ring-leaf-500/50"
-          style={{ background: 'rgba(26,46,27,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}
-        >
-          <Search size={18} className="text-gray-500 flex-shrink-0" />
+        {/* Search Bar */}
+        <div className="relative group">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#41493e] opacity-40 group-focus-within:opacity-100 transition-opacity" />
           <input
             type="text"
-            placeholder="Search crop or mandi..."
+            placeholder="Search crop or mandi station..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="bg-transparent border-none outline-none text-sm text-white w-full placeholder:text-gray-600 font-light"
+            className="w-full bg-white border border-[#e1e4db] rounded-xl pl-11 pr-4 py-3.5 text-sm text-[#191d18] placeholder:text-[#41493e]/40 focus:ring-1 focus:ring-[#1b5e20]/30 outline-none transition-all shadow-sm focus:shadow-md"
           />
         </div>
 
-        {/* Price Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Market Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence>
             {filtered.map((item, idx) => {
               const isUp = item.trend === 'up';
-              const colorBase = isUp ? '#34d399' : '#f87171';
+              const colorBase = isUp ? '#1b5e20' : '#ba1a1a';
               
               return (
                 <motion.div
                   layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.03 }}
                   key={`${item.crop}-${item.market}`}
                 >
-                  <AnimatedCard className="p-5 overflow-hidden relative group">
-                    <div className="absolute inset-0 top-1/2 opacity-20 pointer-events-none group-hover:opacity-30 transition-opacity">
+                  <div className="bg-white border border-[#e1e4db] rounded-xl p-5 hover:shadow-lg transition-all relative overflow-hidden group">
+                    {/* Visual Graph background */}
+                    <div className="absolute inset-x-0 bottom-0 h-12 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                       {item.history && (
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={item.history}>
-                             <Area type="monotone" dataKey="value" stroke={colorBase} strokeWidth={2} fill={colorBase} fillOpacity={0.1} />
+                             <Area type="monotone" dataKey="value" stroke={colorBase} strokeWidth={2} fill={colorBase} fillOpacity={1} />
                           </AreaChart>
                         </ResponsiveContainer>
                       )}
                     </div>
 
-                    <div className="relative z-10">
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="overflow-hidden">
-                          <h3 className="text-lg font-bold text-white tracking-tight truncate pr-2" title={item.crop}>
-                            {item.crop}
-                          </h3>
-                          <span className="text-[9px] text-gray-400 mt-2 inline-block px-2 py-1 rounded-md font-bold uppercase tracking-wider bg-white/5 border border-white/10 truncate max-w-full">
-                            Variety: {item.variety}
-                          </span>
+                    <div className="relative z-10 space-y-5">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-md font-bold text-[#002c06]">{item.crop}</h3>
+                          <p className="text-[9px] font-black text-[#41493e] uppercase tracking-widest opacity-40 mt-0.5">
+                            {item.variety || 'Standard Variety'}
+                          </p>
                         </div>
-                        <div className={`p-2 rounded-xl flex items-center justify-center flex-shrink-0 ${isUp ? 'text-emerald-400 bg-emerald-400/10' : 'text-red-400 bg-red-400/10'}`}>
-                          {isUp ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+                        <div className={`p-2 rounded-lg ${isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'} border border-current opacity-20`}>
+                          {isUp ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                         </div>
                       </div>
 
                       <div className="flex items-end justify-between">
                         <div>
-                          <p className="text-[10px] text-gray-500 mb-1 uppercase tracking-widest font-bold">Live Price</p>
-                          <p className="text-xl font-black tracking-tight">
+                          <h2 className="text-2xl font-black text-[#002c06] leading-none tracking-tight">
                             <NumberTicker value={item.price} />
-                            <span className="text-xs font-normal text-gray-500 ml-1">/q</span>
-                          </p>
+                            <span className="text-[10px] font-bold text-[#41493e] opacity-40 ml-1">/q</span>
+                          </h2>
                         </div>
                         <div className="text-right">
-                          <p className={`text-xs font-bold ${isUp ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {isUp ? '+' : '-'}{item.change}
+                          <p className={`text-xs font-black ${isUp ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {isUp ? '↑' : '↓'} {item.change}
                           </p>
-                          <div className="flex items-center justify-end gap-1 mt-1">
-                            <MapPin size={10} className="text-leaf-600" />
-                            <p className="text-[9px] text-gray-400 font-medium truncate max-w-[100px]">{item.market}</p>
-                          </div>
                         </div>
                       </div>
+
+                      <div className="pt-4 border-t border-[#f4f4f0] flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 opacity-60">
+                           <MapPin size={10} className="text-[#1b5e20]" />
+                           <p className="text-[9px] font-bold text-[#41493e] truncate max-w-[120px]">{item.market}</p>
+                        </div>
+                        <ChevronRight size={12} className="text-[#41493e] opacity-20 group-hover:opacity-60 transition-all" />
+                      </div>
                     </div>
-                  </AnimatedCard>
+                  </div>
                 </motion.div>
               );
             })}
           </AnimatePresence>
           
           {filtered.length === 0 && !loading && (
-            <div className="col-span-full py-12 text-center border border-dashed border-white/10 rounded-3xl">
-              <p className="text-gray-500">No market data available for this search.</p>
+            <div className="col-span-full py-16 text-center bg-white/50 border border-dashed border-[#e1e4db] rounded-2xl">
+              <Activity className="mx-auto mb-3 text-[#41493e] opacity-20" size={32} />
+              <p className="text-[#41493e] font-bold text-[10px] uppercase tracking-widest opacity-60">No market listings found</p>
             </div>
           )}
         </div>
+        
+        {/* Error Notification */}
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3">
+            <AlertCircle className="text-red-600" size={18} />
+            <p className="text-xs font-bold text-red-800">{error}</p>
+          </div>
+        )}
       </div>
     </div>
   );

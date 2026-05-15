@@ -13,6 +13,7 @@ import Auth from './components/Auth';
 export default function App() {
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('kisanai_user');
@@ -25,14 +26,19 @@ export default function App() {
   if (checking) return null;
 
   return (
-    <div className="flex bg-[#0d1a0e] text-gray-100 min-h-screen">
-      <Toaster position="top-center" toastOptions={{ style: { background: '#1a2e1b', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
+    <div className="flex bg-[#f4f4f0] text-[#191d18] min-h-screen">
+      <Toaster position="top-center" />
       
       {!user && <Auth onAuthSuccess={setUser} />}
       
-      <Navbar user={user} onLogout={() => { setUser(null); localStorage.clear(); }} />
+      <Navbar 
+        user={user} 
+        onLogout={() => { setUser(null); localStorage.clear(); }} 
+        collapsed={collapsed} 
+        setCollapsed={setCollapsed}
+      />
       
-      <main className="flex-1 w-full pt-14 pb-16 md:pt-0 md:pb-0 md:ml-20 lg:ml-64 transition-all duration-300">
+      <main className={`flex-1 w-full pt-16 pb-16 md:pt-0 md:pb-0 transition-all duration-300 ${user ? (collapsed ? 'md:ml-20' : 'md:ml-64') : ''}`}>
         <Routes>
           <Route path="/" element={<Dashboard user={user} />} />
           <Route path="/chat" element={<Chat user={user} />} />

@@ -6,3 +6,4 @@ prisma
 pyjwt
 bcrypt
 google-generativeai
+python-dotenv

@@ -26,17 +26,20 @@ model User {
   updatedAt         DateTime @updatedAt
   chats             Chat[]
   recommendations   Recommendation[]
+  analyses          DiseaseAnalysis[]
 }
 
 model Chat {
-  id        String   @id @default(uuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  role      String   // "user" or "ai"
-  text      String
-  intent    String?
-  language  String   @default("en")
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  threadId    String   @default("default")
+  threadTitle String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  role        String   // "user" or "ai"
+  text        String
+  intent      String?
+  language    String   @default("en")
+  createdAt   DateTime @default(now())
 }
 
 model Recommendation {
@@ -60,4 +63,16 @@ model MarketPrice {
   change    Float
   market    String
   updatedAt DateTime @default(now())
+}
+
+model DiseaseAnalysis {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  disease    String
+  confidence Float
+  severity   String
+  treatment  String
+  fertilizer String
+  createdAt  DateTime @default(now())
 }

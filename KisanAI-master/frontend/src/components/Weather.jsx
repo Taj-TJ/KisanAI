@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { CloudRain, Sun, Wind, Droplets, ThermometerSun, AlertTriangle, MapPin, Cloud, CloudLightning, Snowflake, Sunrise, Sunset, Activity, Sparkles } from 'lucide-react';
-import { AreaChart, Area, ResponsiveContainer, YAxis } from 'recharts';
-import { motion } from 'framer-motion';
-import LoadingSkeleton from './ui/LoadingSkeleton';
-import AnimatedCard from './ui/AnimatedCard';
+import { 
+  CloudRain, 
+  Sun, 
+  Wind, 
+  Droplets, 
+  ThermometerSun, 
+  AlertTriangle, 
+  MapPin, 
+  Cloud, 
+  CloudLightning, 
+  Snowflake, 
+  Sunrise, 
+  Sunset, 
+  Activity, 
+  Sparkles,
+  ChevronRight,
+  Navigation
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fetchWeather as fetchWeatherAPI } from '../services/api';
 import ErrorState from './ui/ErrorState';
-
-const WEATHER_ICONS = {
-  0: Sun, 1: Sun, 2: Cloud, 3: Cloud, 45: Cloud, 48: Cloud,
-  51: CloudRain, 53: CloudRain, 55: CloudRain, 61: CloudRain, 63: CloudRain, 65: CloudRain,
-  80: CloudRain, 81: CloudRain, 82: CloudRain, 95: CloudLightning, 96: CloudLightning, 99: CloudLightning,
-};
-
-const getAlert = (code, temp) => {
-  if (code >= 51 && code <= 65) return "High rain chance — avoid pesticide spraying or outdoor drying.";
-  if (code >= 80 && code <= 82) return "Heavy showers expected. Postpone fertilizer application.";
-  if (temp > 40) return "Extreme heat alert. Ensure adequate irrigation during early morning.";
-  if (temp < 5) return "Frost risk. Consider protective measures for sensitive crops.";
-  return "Conditions are currently favorable for general farming activities.";
-};
 
 export default function Weather() {
   const [weatherData, setWeatherData] = useState(null);
@@ -31,7 +31,6 @@ export default function Weather() {
     try {
       setLoading(true);
       setError(null);
-      // Fetch from our secure backend which uses the user's OpenWeather key
       const data = await fetchWeatherAPI(lat, lon);
       
       if (data.current) {
@@ -48,6 +47,7 @@ export default function Weather() {
   };
 
   useEffect(() => {
+    document.title = "Weather Forecast | KisanAI";
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -67,21 +67,20 @@ export default function Weather() {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-6 md:p-10 max-w-2xl mx-auto space-y-6">
-        <LoadingSkeleton className="h-8 w-1/3" />
-        <LoadingSkeleton className="h-64 w-full rounded-3xl" />
-        <div className="grid grid-cols-2 gap-4">
-          <LoadingSkeleton className="h-32 rounded-2xl" />
-          <LoadingSkeleton className="h-32 rounded-2xl" />
-        </div>
-        <LoadingSkeleton className="h-40 w-full rounded-2xl" />
+      <div className="min-h-screen bg-[#f4f4f0] flex flex-col items-center justify-center p-6 space-y-4">
+        <motion.div 
+          animate={{ rotate: 360 }} 
+          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+          className="w-12 h-12 rounded-full border-4 border-[#1b5e20]/20 border-t-[#1b5e20]"
+        />
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#41493e]">Syncing with Meteorological Satellites...</p>
       </div>
     );
   }
 
   if (error || !weatherData) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="min-h-screen bg-[#f4f4f0] flex items-center justify-center p-6">
         <ErrorState message={error} onRetry={() => fetchWeather(location.lat, location.lon)} />
       </div>
     );
@@ -89,125 +88,200 @@ export default function Weather() {
 
   const { current, forecast, alerts, location: locationName } = weatherData;
   const CurrentIcon = current.icon ? () => <img src={`https://openweathermap.org/img/wn/${current.icon}@2x.png`} className="w-full h-full" alt="weather" /> : Cloud;
-  
+
   return (
-    <div className="min-h-screen overflow-y-auto" style={{ background: 'linear-gradient(160deg, #0d1a0e 0%, #0f1c1a 100%)' }}>
-      <div className="max-w-2xl mx-auto px-4 py-6 md:py-10 pb-24 md:pb-10 space-y-6">
-
-        {/* Header */}
-        <div>
-          <h2 className="text-2xl font-semibold text-white tracking-tight">Weather Dashboard</h2>
-          <div className="flex items-center gap-1.5 mt-1">
-            <MapPin size={13} className="text-leaf-400" />
-            <p className="text-sm text-gray-400">{locationName || 'Local Area'} (LAT: {location.lat.toFixed(2)}, LON: {location.lon.toFixed(2)})</p>
-          </div>
-        </div>
-
-        {/* Current Weather Card */}
-        <AnimatedCard className="p-6 relative overflow-hidden" hover={false}>
-          <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-10 blur-3xl bg-leaf-500"></div>
-
-          <div className="relative z-10">
-            <p className="text-[10px] text-leaf-400 font-bold uppercase tracking-[0.2em] mb-4">Live Conditions</p>
-
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <p className="text-7xl font-extralight text-white leading-none mb-3">{Math.round(current.temp)}°</p>
-                <div className="flex items-center gap-2">
-                   <p className="text-leaf-300 font-medium text-lg capitalize">
-                     {current.description}
-                   </p>
-                </div>
-              </div>
-              <motion.div 
-                animate={{ scale: [1, 1.05, 1] }} 
-                transition={{ repeat: Infinity, duration: 8 }}
-                className="w-24 h-24"
-              >
-                <CurrentIcon />
-              </motion.div>
-            </div>
-
-            {/* Smart AI Advisory */}
-            <div className="mt-6 space-y-2">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles size={14} className="text-emerald-400" />
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">AI Farming Alerts</span>
-              </div>
-              {alerts && alerts.map((alert, i) => (
-                <div key={i} className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-start gap-3">
-                  <SproutIcon size={16} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-emerald-100 leading-relaxed">{alert}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </AnimatedCard>
-
-        {/* Vital Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { icon: Droplets, label: 'Humidity', value: `${current.humidity}%`, color: 'text-blue-400' },
-            { icon: Wind, label: 'Wind Speed', value: `${current.wind} km/h`, color: 'text-teal-400' },
-            { icon: Sunrise, label: 'Sunrise', value: current.sunrise ? new Date(current.sunrise * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A', color: 'text-yellow-400' },
-            { icon: Sunset, label: 'Sunset', value: current.sunset ? new Date(current.sunset * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A', color: 'text-orange-400' },
-          ].map(({ icon: Icon, label, value, color }) => (
-            <AnimatedCard key={label} className="flex flex-col items-center gap-2 py-5 bg-white/[0.02]" hover={true}>
-              <Icon size={20} className={color} />
-              <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">{label}</span>
-              <span className="text-sm font-bold text-white tracking-tight">{value}</span>
-            </AnimatedCard>
-          ))}
-        </div>
-
-        {/* 5-Day Forecast */}
-        <h3 className="text-sm font-bold text-white mt-8 mb-4 uppercase tracking-[0.2em] opacity-60">5-Day Forecast</h3>
-        <div className="flex flex-col gap-2">
-          {forecast.map((day) => {
-            const Icon = day.icon ? () => <img src={`https://openweathermap.org/img/wn/${day.icon}.png`} className="w-8 h-8" alt="weather" /> : Cloud;
-            const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' });
-
-            return (
-              <AnimatedCard
-                key={day.date}
-                className="p-4 flex items-center justify-between bg-white/[0.01]"
-              >
-                <div className="w-24">
-                  <span className="text-sm font-semibold text-gray-300">{dayName}</span>
-                </div>
-                
-                <div className="flex items-center gap-3 flex-1 px-4">
-                  <Icon />
-                  <span className="text-xs text-gray-500 font-medium capitalize">
-                    {day.description}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-bold text-white">{Math.round(day.temp_high || day.temp)}°</span>
-                  <span className="text-sm font-medium text-gray-600">{Math.round(day.temp_low || (day.temp - 5))}°</span>
-                </div>
-              </AnimatedCard>
-            );
-          })}
-        </div>
+    <div className="min-h-screen bg-[#f4f4f0] font-['Manrope'] text-[#191d18] overflow-y-auto">
+      <div className="max-w-6xl mx-auto px-4 py-4 md:py-8 space-y-6">
         
-        <p className="text-center text-[10px] text-gray-700 mt-8 mb-4">
-          Powered by OpenWeatherMap & Gemini AI
-        </p>
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-2">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+            <div className="flex items-center gap-2 text-[#002c06] mb-0.5">
+              <MapPin size={18} />
+              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
+                {locationName || 'Local Area'}
+              </h1>
+            </div>
+            <p className="text-xs text-[#41493e] font-medium opacity-80 flex items-center gap-2">
+              <Navigation size={10} className="text-[#1b5e20]" />
+              Precision weather tracking for optimal irrigation and soil management.
+            </p>
+          </motion.div>
+          
+          <div className="hidden md:flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-[#41493e] opacity-60">
+             <span>LAT: {location.lat.toFixed(2)}</span>
+             <span className="w-1 h-1 rounded-full bg-current opacity-30" />
+             <span>LON: {location.lon.toFixed(2)}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Main Weather Card (Bento Style) */}
+          <section className="lg:col-span-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white border border-[#e1e4db] rounded-2xl p-6 md:p-8 shadow-sm relative overflow-hidden h-full flex flex-col justify-between"
+            >
+              {/* Subtle background decoration */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-[#d9e6da] rounded-full blur-[80px] opacity-40 -mr-24 -mt-24" />
+              
+              <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-6">
+                <div>
+                  <span className="inline-block bg-[#d9e6da] text-[#002c06] px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-4 border border-[#1b5e20]/10">
+                    Live Conditions
+                  </span>
+                  
+                  <div className="flex items-end gap-2">
+                    <h2 className="text-6xl md:text-7xl font-extrabold text-[#002c06] leading-none">
+                      {Math.round(current.temp)}°
+                    </h2>
+                    <div className="mb-2">
+                      <p className="text-lg md:text-xl font-bold text-[#191d18] capitalize leading-none mb-1">
+                        {current.description}
+                      </p>
+                      <p className="text-[10px] font-bold text-[#41493e] opacity-60 uppercase tracking-widest">
+                        Feels like {Math.round(current.feels_like)}°
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <motion.div 
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                  className="w-24 h-24 md:w-28 md:h-28 bg-[#f8faf2] rounded-2xl flex items-center justify-center p-3 border border-[#e1e4db]/50 shadow-inner"
+                >
+                  <CurrentIcon />
+                </motion.div>
+              </div>
+
+              {/* Vitals Row */}
+              <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-3 mt-10 md:mt-12">
+                {[
+                  { icon: Droplets, label: 'Humidity', value: `${current.humidity}%`, color: 'text-blue-600' },
+                  { icon: Wind, label: 'Wind Speed', value: `${current.wind} km/h`, color: 'text-emerald-600' },
+                  { icon: Sunrise, label: 'Sunrise', value: current.sunrise ? new Date(current.sunrise * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A', color: 'text-amber-600' },
+                  { icon: Sunset, label: 'Sunset', value: current.sunset ? new Date(current.sunset * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A', color: 'text-orange-600' },
+                ].map((item, i) => (
+                  <div key={i} className="bg-[#f8faf2] border border-[#e1e4db] p-4 rounded-xl flex flex-col gap-0.5 transition-all hover:border-[#1b5e20]/20 hover:shadow-sm">
+                    <item.icon size={16} className={`${item.color} mb-1.5`} />
+                    <span className="text-[9px] font-black text-[#41493e] uppercase tracking-widest opacity-60">{item.label}</span>
+                    <span className="text-md font-extrabold text-[#002c06]">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </section>
+
+          {/* AI Advisory Section */}
+          <section className="lg:col-span-4 flex flex-col gap-6">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-[#002c06] text-white p-6 rounded-2xl shadow-lg relative overflow-hidden flex-1 flex flex-col"
+            >
+              {/* Pattern overlay */}
+              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+              
+              <div className="relative z-10 flex items-center gap-3 mb-6">
+                <div className="p-1.5 bg-white/10 rounded-lg">
+                  <Activity size={20} className="text-[#95d78e]" />
+                </div>
+                <h3 className="text-lg font-bold">Field Advisory</h3>
+              </div>
+
+              <div className="relative z-10 flex-1 space-y-4">
+                {alerts && alerts.length > 0 ? alerts.map((alert, i) => (
+                  <motion.div 
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + (i * 0.1) }}
+                    className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm"
+                  >
+                    <div className="flex gap-4">
+                       <div className="p-2 bg-white/10 rounded-lg h-fit">
+                          {alert.toLowerCase().includes('rain') || alert.toLowerCase().includes('irrigation') ? <Droplets size={16} /> : <AlertTriangle size={16} />}
+                       </div>
+                       <div>
+                          <h4 className="text-sm font-bold text-[#95d78e] mb-1">
+                            {alert.toLowerCase().includes('rain') ? 'Irrigation Alert' : 'Field Advisory'}
+                          </h4>
+                          <p className="text-xs text-white/80 leading-relaxed font-medium">
+                            {alert}
+                          </p>
+                       </div>
+                    </div>
+                  </motion.div>
+                )) : (
+                  <div className="text-white/40 italic text-sm py-8 text-center">
+                    Conditions are stable. No urgent farming alerts for your region.
+                  </div>
+                )}
+              </div>
+
+              <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
+                <button className="w-full py-3 bg-[#1b5e20] text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-[#2e6b2f] transition-all group">
+                   Advisory Report
+                   <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </motion.div>
+          </section>
+
+          {/* 5-Day Forecast Grid */}
+          <section className="lg:col-span-12">
+             <div className="flex items-center gap-2 mb-4">
+                <Activity size={18} className="text-[#1b5e20]" />
+                <h3 className="text-lg font-bold text-[#002c06]">5-Day Forecast</h3>
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                {forecast.map((day, i) => {
+                  const Icon = day.icon ? () => <img src={`https://openweathermap.org/img/wn/${day.icon}.png`} className="w-full h-full" alt="weather" /> : Cloud;
+                  const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' });
+                  
+                  return (
+                    <motion.div
+                      key={day.date}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 + (i * 0.05) }}
+                      className="bg-white border border-[#e1e4db] p-4 rounded-2xl text-center hover:border-[#1b5e20] transition-all hover:shadow-sm group"
+                    >
+                      <p className="text-[9px] font-black text-[#41493e] uppercase tracking-widest mb-3 opacity-60">
+                         {dayName}
+                      </p>
+                      <div className="w-12 h-12 mx-auto mb-3 p-1.5 bg-[#f8faf2] rounded-xl border border-[#e1e4db]/50 group-hover:bg-[#d9e6da] transition-colors">
+                         <Icon />
+                      </div>
+                      <p className="text-[10px] font-bold text-[#191d18] capitalize mb-3 truncate">
+                        {day.description}
+                      </p>
+                      <div className="flex justify-center items-end gap-2 pt-3 border-t border-[#e1e4db]/50">
+                        <span className="text-md font-extrabold text-[#002c06]">{Math.round(day.temp_high || day.temp)}°</span>
+                        <span className="text-xs font-bold text-[#41493e] opacity-40">{Math.round(day.temp_low || (day.temp - 5))}°</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+             </div>
+          </section>
+        </div>
+
+        {/* Footer info */}
+        <footer className="pt-8 border-t border-[#e1e4db] flex flex-col md:flex-row justify-between items-center gap-4 text-[9px] font-black uppercase tracking-[0.2em] text-[#41493e] opacity-40">
+           <p>Powered by OpenWeatherMap & Meteorological Intelligence</p>
+           <div className="flex gap-6">
+              <span className="hover:text-[#1b5e20] cursor-pointer transition-colors">Data Integrity</span>
+              <span className="hover:text-[#1b5e20] cursor-pointer transition-colors">Agri Sensors</span>
+              <span className="hover:text-[#1b5e20] cursor-pointer transition-colors">Meteorological Node</span>
+           </div>
+        </footer>
       </div>
     </div>
-  );
-}
-
-function SproutIcon({ className, size }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M7 20h10" />
-      <path d="M10 20c5.5-1.5 5.5-8.5 5.5-8.5" />
-      <path d="M15.5 11.5c-3 0-5.5-2.5-5.5-5.5" />
-      <path d="M10 20c-5.5-1.5-5.5-8.5-5.5-8.5" />
-      <path d="M4.5 11.5c3 0 5.5-2.5 5.5-5.5" />
-    </svg>
   );
 }

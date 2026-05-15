@@ -7,3 +7,7 @@ VIVA_GUIDE.md
 .DS_Store
 dist/
 build/
+backend/api_cache.json
+*.db
+prisma/*.db
+scratch/
