@@ -100,7 +100,7 @@ def is_cache_valid(key):
 def ensure_db_connected():
     if not db.is_connected():
         try:
-            db.connect(timeout=20)
+            db.connect(timeout=60, handle_signals=False)
             print("[app] Database connected successfully.")
         except Exception as e:
             print(f"[app] CRITICAL: Database connection failed: {e}")
@@ -206,18 +206,27 @@ def health():
 @app.route("/db-test", methods=["GET"])
 def db_test():
     try:
-        # Try a simple count query
+        # Check if DATABASE_URL is even present
+        db_url = os.environ.get("DATABASE_URL", "NOT_SET")
+        masked_url = db_url[:15] + "..." if db_url != "NOT_SET" else "NOT_SET"
+        
+        # Try to connect with a longer timeout and no signal handling
+        if not db.is_connected():
+            db.connect(timeout=60, handle_signals=False)
+            
         count = db.user.count()
         return jsonify({
             "status": "connected",
             "user_count": count,
+            "db_url_found": masked_url,
             "message": "Successfully queried Neon database via Prisma."
         })
     except Exception as e:
         return jsonify({
             "status": "error",
             "error_type": type(e).__name__,
-            "error_message": str(e)
+            "error_message": str(e),
+            "db_url_found": masked_url if 'masked_url' in locals() else "UNKNOWN"
         }), 500
 
 
