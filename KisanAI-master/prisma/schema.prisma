@@ -6,8 +6,9 @@ generator client {
 }
 
 generator py {
-  provider  = "prisma-client-py"
-  interface = "sync"
+  provider      = "prisma-client-py"
+  interface     = "sync"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {

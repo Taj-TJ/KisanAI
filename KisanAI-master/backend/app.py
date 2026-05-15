@@ -199,10 +199,26 @@ def login():
     return jsonify({"error": "Invalid email or password"}), 401
 
 
-# ─── Health ───────────────────────────────────────────────────────────
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "OK", "message": "Farmer AI backend is running."})
+
+@app.route("/db-test", methods=["GET"])
+def db_test():
+    try:
+        # Try a simple count query
+        count = db.user.count()
+        return jsonify({
+            "status": "connected",
+            "user_count": count,
+            "message": "Successfully queried Neon database via Prisma."
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error_type": type(e).__name__,
+            "error_message": str(e)
+        }), 500
 
 
 # ─── Chat Query ───────────────────────────────────────────────────────
