@@ -80,7 +80,7 @@ export default function Dashboard() {
     { label: 'Markets Tracked', value: stats?.markets_tracked || 0, icon: BarChart3, color: 'text-leaf-600' },
     { label: 'Active Farmers', value: stats?.active_farmers || 0, suffix: '+', icon: Users, color: 'text-leaf-600' },
     { label: 'Precision Score', value: stats?.ai_accuracy || 0, suffix: '%', icon: Zap, color: 'text-leaf-600' },
-  ].filter(s => s.value > 0);
+  ].filter(s => s.value >= 0);
 
   return (
     <div className="min-h-screen bg-[#faf9f5] font-['Manrope'] text-[#191d18] overflow-y-auto">
@@ -209,7 +209,7 @@ export default function Dashboard() {
                     exit={{ opacity: 0, y: -5 }}
                   >
                     <h5 className="text-lg md:text-2xl font-bold leading-snug">
-                      {tips[tipIndex] || "Optimize your crop health with advisory insights."}
+                      {typeof tips[tipIndex] === 'string' ? tips[tipIndex] : (tips[tipIndex]?.text || "Optimize your crop health with advisory insights.")}
                     </h5>
                   </motion.div>
                 </AnimatePresence>

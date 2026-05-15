@@ -370,8 +370,10 @@ app.get("/dashboard/alerts", async (req, res) => {
 
 app.get("/dashboard/tips", async (req, res) => {
   res.json([
-    { id: 1, title: 'Soil Health', text: 'Rotate legumes with cereals to naturally restore nitrogen levels.' },
-    { id: 2, title: 'Irrigation', text: 'Water during early morning to reduce evaporation losses by 30%.' }
+    'Rotate legumes with cereals to naturally restore nitrogen levels.',
+    'Water during early morning to reduce evaporation losses by 30%.',
+    'Use mulch to retain soil moisture and suppress weed growth.',
+    'Test your soil every 2 years to optimize fertilizer application.'
   ]);
 });
 
