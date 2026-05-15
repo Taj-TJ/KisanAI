@@ -117,8 +117,8 @@ export default function Weather() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* Main Weather Card (Bento Style) */}
-          <section className="lg:col-span-8">
+          {/* Main Weather Card (Full Width) */}
+          <section className="lg:col-span-12">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -175,62 +175,6 @@ export default function Weather() {
             </motion.div>
           </section>
 
-          {/* AI Advisory Section */}
-          <section className="lg:col-span-4 flex flex-col gap-6">
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-[#002c06] text-white p-6 rounded-2xl shadow-lg relative overflow-hidden flex-1 flex flex-col"
-            >
-              {/* Pattern overlay */}
-              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-              
-              <div className="relative z-10 flex items-center gap-3 mb-6">
-                <div className="p-1.5 bg-white/10 rounded-lg">
-                  <Activity size={20} className="text-[#95d78e]" />
-                </div>
-                <h3 className="text-lg font-bold">Field Advisory</h3>
-              </div>
-
-              <div className="relative z-10 flex-1 space-y-4">
-                {alerts && alerts.length > 0 ? alerts.map((alert, i) => (
-                  <motion.div 
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + (i * 0.1) }}
-                    className="bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm"
-                  >
-                    <div className="flex gap-4">
-                       <div className="p-2 bg-white/10 rounded-lg h-fit">
-                          {alert.toLowerCase().includes('rain') || alert.toLowerCase().includes('irrigation') ? <Droplets size={16} /> : <AlertTriangle size={16} />}
-                       </div>
-                       <div>
-                          <h4 className="text-sm font-bold text-[#95d78e] mb-1">
-                            {alert.toLowerCase().includes('rain') ? 'Irrigation Alert' : 'Field Advisory'}
-                          </h4>
-                          <p className="text-xs text-white/80 leading-relaxed font-medium">
-                            {alert}
-                          </p>
-                       </div>
-                    </div>
-                  </motion.div>
-                )) : (
-                  <div className="text-white/40 italic text-sm py-8 text-center">
-                    Conditions are stable. No urgent farming alerts for your region.
-                  </div>
-                )}
-              </div>
-
-              <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
-                <button className="w-full py-3 bg-[#1b5e20] text-white rounded-xl text-[9px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-[#2e6b2f] transition-all group">
-                   Advisory Report
-                   <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </motion.div>
-          </section>
 
           {/* 5-Day Forecast Grid */}
           <section className="lg:col-span-12">
