@@ -1,0 +1,9 @@
+node_modules/
+.env
+__pycache__/
+*.pkl
+VIVA_EXPLANATION.md
+VIVA_GUIDE.md
+.DS_Store
+dist/
+build/

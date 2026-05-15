@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator py {
+  provider  = "prisma-client-py"
+  interface = "sync"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  name              String?
+  location          String?
+  preferredLanguage String   @default("en")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  chats             Chat[]
+  recommendations   Recommendation[]
+}
+
+model Chat {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  role      String   // "user" or "ai"
+  text      String
+  intent    String?
+  language  String   @default("en")
+  createdAt DateTime @default(now())
+}
+
+model Recommendation {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  soil       String
+  season     String
+  water      String
+  lat        Float?
+  lon        Float?
+  results    String   // JSON string of recommendations
+  createdAt  DateTime @default(now())
+}
+
+model MarketPrice {
+  id        String   @id @default(uuid())
+  crop      String
+  variety   String
+  price     Float
+  change    Float
+  market    String
+  updatedAt DateTime @default(now())
+}
