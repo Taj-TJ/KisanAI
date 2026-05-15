@@ -4,8 +4,8 @@ class AIService {
   constructor(apiKey) {
     this.apiKey = apiKey;
     this.genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-    this.model = this.genAI ? this.genAI.getGenerativeModel({ model: "gemini-flash-latest" }) : null;
-    this.visionModel = this.genAI ? this.genAI.getGenerativeModel({ model: "gemini-flash-latest" }) : null;
+    this.model = this.genAI ? this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) : null;
+    this.visionModel = this.genAI ? this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) : null;
     this.enabled = !!apiKey;
   }
 
