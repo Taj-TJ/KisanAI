@@ -101,11 +101,13 @@ app.post("/auth/login", async (req, res) => {
 // --- HEALTH ---
 app.get("/health", (req, res) => res.json({ status: "OK", message: "KisanAI Node.js backend is live." }));
 
-app.get("/db-test", async (req, res) => {
+app.get("/debug/models", async (req, res) => {
   try {
-    const count = await prisma.user.count();
-    res.json({ status: "connected", user_count: count, message: "Neon DB connected successfully via Node.js Prisma." });
-  } catch (e) { res.status(500).json({ status: "error", error: e.message }); }
+    const models = await aiService.genAI.getGenerativeModel({ model: "gemini-1.5-flash" }).model;
+    // Just list available models
+    const list = await aiService.genAI.listModels();
+    res.json(list);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // --- CHAT ---
